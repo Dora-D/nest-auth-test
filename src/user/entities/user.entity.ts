@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,6 +12,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index({ unique: true })
   @Column()
   email: string;
 
@@ -23,6 +25,6 @@ export class User {
   @Column()
   hash: string;
 
-  @Column()
+  @Column({ nullable: true })
   hashedRt: string;
 }
