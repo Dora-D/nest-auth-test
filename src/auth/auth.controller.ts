@@ -1,32 +1,51 @@
 import { AuthDto } from '@app/auth/dto/auth.dto';
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '@app/auth/auth.service';
 import { Tokens } from '@app/auth/types/tokens.type';
+import { RtGuard } from '@app/common/guards/rt.guard';
+import { GetCurrentUserId } from '@app/common/decorators/get-current-user-id.decorator';
+import { GetCurrentUser } from '@app/common/decorators/get-current-user.decorator';
+import { Public } from '@app/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  @HttpCode(HttpStatus.CREATED)
+
+  @Public()
   @Post('local/signup')
+  @HttpCode(HttpStatus.CREATED)
   signupLocal(@Body() dto: AuthDto): Promise<Tokens> {
     return this.authService.signupLocal(dto);
   }
 
-  @HttpCode(HttpStatus.OK)
+  @Public()
   @Post('local/signin')
+  @HttpCode(HttpStatus.OK)
   signinLocal(@Body() dto: AuthDto): Promise<Tokens> {
     return this.authService.signinLocal(dto);
   }
 
-  // @HttpCode(HttpStatus.OK)
-  // @Post('logout')
-  // logout(userId: number): Promise<boolean> {
-  //   return this.authService.logout(userId);
-  // }
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@GetCurrentUserId() userId: number): Promise<boolean> {
+    return this.authService.logout(userId);
+  }
 
-  // @HttpCode(HttpStatus.OK)
-  // @Post('refresh')
-  // refreshTokens(): Promise<Tokens> {
-  //   return this.authService.refreshTokens();
-  // }
+  @Public()
+  @UseGuards(RtGuard)
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  refreshTokens(
+    @GetCurrentUserId() userId: number,
+    @GetCurrentUser('refreshToken') refreshToken: string,
+  ): Promise<Tokens> {
+    return this.authService.refreshTokens(userId, refreshToken);
+  }
 }
