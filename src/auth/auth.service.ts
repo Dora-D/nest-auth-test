@@ -8,6 +8,7 @@ import { JwtPayload } from '@app/auth/types/jwtPayload.type';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Tokens } from '@app/auth/types/tokens.type';
+import { rtJwtPayload } from '@app/auth/types/rtJwtPayload';
 
 @Injectable()
 export class AuthService {
@@ -32,12 +33,16 @@ export class AuthService {
       email: email,
     };
 
+    const rtJwtPayload: rtJwtPayload = {
+      id: userId,
+    };
+
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
         secret: this.config.get<string>('AT_SECRET'),
         expiresIn: '15m',
       }),
-      this.jwtService.signAsync(jwtPayload, {
+      this.jwtService.signAsync(rtJwtPayload, {
         secret: this.config.get<string>('RT_SECRET'),
         expiresIn: '7d',
       }),
